@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Users, TrendingUp } from "lucide-react"
 import { CreateCommunityDialog } from "@/components/communities/create-community-dialog"
+import Link from "next/link"
 
 interface Community {
   id: number
@@ -94,51 +95,53 @@ export default function CommunitiesPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {communities.map((community) => (
-            <Card key={community.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="p-4 sm:p-6">
-                <div className="flex items-start justify-between mb-3 sm:mb-4">
-                  <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+            <Link href={`/communities/${community.id}`} key={community.id} className="block">
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardHeader className="p-4 sm:p-6">
+                  <div className="flex items-start justify-between mb-3 sm:mb-4">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                      <Users className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    </div>
+                    <Badge className={`${getCategoryColor(community.category)} text-xs`}>{community.category}</Badge>
                   </div>
-                  <Badge className={`${getCategoryColor(community.category)} text-xs`}>{community.category}</Badge>
-                </div>
-                <CardTitle className="text-lg sm:text-xl">{community.name}</CardTitle>
-                <CardDescription className="line-clamp-2 text-sm sm:text-base">{community.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6 pt-0">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                    <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    {community.member_count.toLocaleString()} members
+                  <CardTitle className="text-lg sm:text-xl">{community.name}</CardTitle>
+                  <CardDescription className="line-clamp-2 text-sm sm:text-base">{community.description}</CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 sm:p-6 pt-0">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                      <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      {community.member_count.toLocaleString()} members
+                    </div>
+                    <div className="flex items-center text-xs sm:text-sm text-green-600">
+                      <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                      Active
+                    </div>
                   </div>
-                  <div className="flex items-center text-xs sm:text-sm text-green-600">
-                    <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                    Active
-                  </div>
-                </div>
-                <Button
-                  className="w-full text-sm sm:text-base"
-                  disabled={joinedCommunities.includes(community.id)}
-                  onClick={async () => {
-                    if (joinedCommunities.includes(community.id)) return
-                    try {
-                      const response = await fetch(`/api/communities/${community.id}/join`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ action: "join" }),
-                      })
-                      if (response.ok) {
-                        fetchJoinedCommunities()
+                  <Button
+                    className="w-full text-sm sm:text-base"
+                    disabled={joinedCommunities.includes(community.id)}
+                    onClick={async () => {
+                      if (joinedCommunities.includes(community.id)) return
+                      try {
+                        const response = await fetch(`/api/communities/${community.id}/join`, {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ action: "join" }),
+                        })
+                        if (response.ok) {
+                          fetchJoinedCommunities()
+                        }
+                      } catch (error) {
+                        console.error("Error joining community:", error)
                       }
-                    } catch (error) {
-                      console.error("Error joining community:", error)
-                    }
-                  }}
-                >
-                  {joinedCommunities.includes(community.id) ? "Joined" : "Join Community"}
-                </Button>
-              </CardContent>
-            </Card>
+                    }}
+                  >
+                    {joinedCommunities.includes(community.id) ? "Joined" : "Join Community"}
+                  </Button>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
 
