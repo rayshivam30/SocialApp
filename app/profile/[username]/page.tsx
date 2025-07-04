@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { Navbar } from "@/components/layout/navbar"
 import { PostCard } from "@/components/posts/post-card"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Calendar, Users, Heart, MessageCircle, Settings, UserPlus, UserMinus, Loader2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import Link from "next/link"
+import { BackButton } from "@/components/ui/back-button"
 
 interface UserProfile {
   id: number
@@ -62,9 +63,94 @@ interface CurrentUser {
   profile_picture_url?: string
 }
 
+function ChatModal({ open, onClose, currentUser, profile }: any) {
+  const [messages, setMessages] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const [input, setInput] = useState("")
+  const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    let interval: any
+    if (open && currentUser && profile) {
+      fetchMessages()
+      interval = setInterval(fetchMessages, 2000)
+    }
+    return () => clearInterval(interval)
+    // eslint-disable-next-line
+  }, [open])
+
+  const fetchMessages = async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(`/api/messages?userId=${profile.id}`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(data.messages)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSend = async () => {
+    if (!input.trim()) return
+    setSending(true)
+    try {
+      const res = await fetch("/api/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverId: profile.id, content: input })
+      })
+      if (res.ok) {
+        setInput("")
+        fetchMessages()
+      }
+    } finally {
+      setSending(false)
+    }
+  }
+
+  if (!open) return null
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4 relative">
+        <button onClick={onClose} className="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+        <h2 className="text-xl font-bold mb-2">Chat with {profile.full_name || profile.username}</h2>
+        <div className="h-64 overflow-y-auto border rounded p-2 mb-2 bg-gray-50">
+          {loading ? <div>Loading...</div> : messages.length === 0 ? <div className="text-gray-400">No messages yet.</div> : (
+            messages.map((msg, i) => (
+              <div key={i} className={`mb-2 flex ${msg.sender_id === currentUser.id ? 'justify-end' : 'justify-start'}`}>
+                <div className={`px-3 py-2 rounded-lg ${msg.sender_id === currentUser.id ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900'}`}>
+                  {msg.content}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+        <div className="flex gap-2">
+          <input
+            className="flex-1 border rounded px-2 py-1"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') handleSend() }}
+            placeholder="Type a message..."
+            disabled={sending}
+          />
+          <button
+            className="bg-blue-600 text-white px-4 py-1 rounded disabled:opacity-50"
+            onClick={handleSend}
+            disabled={sending || !input.trim()}
+          >Send</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ProfilePage() {
   const params = useParams()
   const username = params.username as string
+  const router = useRouter()
 
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
@@ -73,6 +159,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [followLoading, setFollowLoading] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
 
   useEffect(() => {
     if (username) {
@@ -234,6 +321,7 @@ export default function ProfilePage() {
       <Navbar user={currentUser || { username: "user", full_name: "User" }} />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
+        <BackButton />
         <Card className="mb-4 sm:mb-6">
           <CardHeader className="p-4 sm:p-6">
             <div className="flex flex-col space-y-4">
@@ -262,21 +350,31 @@ export default function ProfilePage() {
                           </Link>
                         </Button>
                       ) : (
-                        <Button
-                          onClick={handleFollow}
-                          disabled={followLoading}
-                          variant={profile.is_following ? "outline" : "default"}
-                          className="w-full sm:w-auto"
-                        >
-                          {followLoading ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : profile.is_following ? (
-                            <UserMinus className="h-4 w-4 mr-2" />
-                          ) : (
-                            <UserPlus className="h-4 w-4 mr-2" />
-                          )}
-                          {profile.is_following ? "Unfollow" : "Follow"}
-                        </Button>
+                        <>
+                          <Button
+                            onClick={handleFollow}
+                            disabled={followLoading}
+                            variant={profile.is_following ? "outline" : "default"}
+                            className="w-full sm:w-auto"
+                          >
+                            {followLoading ? (
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            ) : profile.is_following ? (
+                              <UserMinus className="h-4 w-4 mr-2" />
+                            ) : (
+                              <UserPlus className="h-4 w-4 mr-2" />
+                            )}
+                            {profile.is_following ? "Unfollow" : "Follow"}
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            className="w-full sm:w-auto"
+                            onClick={() => router.push(`/direct-messages?user=${profile.username}`)}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Message
+                          </Button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -440,6 +538,7 @@ export default function ProfilePage() {
             )}
           </TabsContent>
         </Tabs>
+        <ChatModal open={chatOpen} onClose={() => setChatOpen(false)} currentUser={currentUser} profile={profile} />
       </div>
     </div>
   )

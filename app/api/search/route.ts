@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getAuthUser } from "@/lib/auth"
-import { searchUsers, searchCommunities } from "@/lib/db"
+import { searchUsers, searchCommunities, searchFollowedUsers } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get("q")
     const type = searchParams.get("type") || "all"
+    const followedOnly = searchParams.get("followedOnly") === "true"
 
     if (!query) {
       return NextResponse.json({ error: "Search query is required" }, { status: 400 })
@@ -20,7 +21,11 @@ export async function GET(request: NextRequest) {
     const results: any = {}
 
     if (type === "users" || type === "all") {
-      results.users = await searchUsers(query)
+      if (followedOnly) {
+        results.users = await searchFollowedUsers(user.id, query)
+      } else {
+        results.users = await searchUsers(query)
+      }
     }
 
     if (type === "communities" || type === "all") {

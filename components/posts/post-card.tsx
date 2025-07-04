@@ -43,7 +43,7 @@ interface PostCardProps {
 
 export function PostCard({ post, currentUser, onLike }: PostCardProps) {
   const [liked, setLiked] = useState(post.is_liked)
-  const [likeCount, setLikeCount] = useState(post.like_count)
+  const [likeCount, setLikeCount] = useState(Number(post.like_count))
   const [commentCount, setCommentCount] = useState(post.comment_count)
   const [showComments, setShowComments] = useState(false)
   const [likingInProgress, setLikingInProgress] = useState(false)
@@ -64,7 +64,7 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
     const previousCount = likeCount
     const newLiked = !wasLiked
     setLiked(newLiked)
-    setLikeCount(previousCount + (newLiked ? 1 : -1))
+    setLikeCount(Number(previousCount) + (newLiked ? 1 : -1))
 
     try {
       const response = await fetch(`/api/posts/${post.id}/like`, {
@@ -171,9 +171,9 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-auto sm:w-auto">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
+        <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-auto sm:w-auto">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {currentUser && currentUser.id === post.user_id && (

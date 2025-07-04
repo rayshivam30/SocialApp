@@ -280,3 +280,69 @@ export async function getCommunityPosts(communityId: number, limit = 20, offset 
     return []
   }
 }
+
+export async function sendMessage(senderId: number, receiverId: number, content: string) {
+  try {
+    const result = await sql`
+      INSERT INTO messages (sender_id, receiver_id, content)
+      VALUES (${senderId}, ${receiverId}, ${content})
+      RETURNING *
+    `
+    return result[0]
+  } catch (error) {
+    console.error("Error sending message:", error)
+    throw error
+  }
+}
+
+export async function getMessagesBetweenUsers(userId1: number, userId2: number, limit = 50, offset = 0) {
+  try {
+    const result = await sql`
+      SELECT * FROM messages
+      WHERE (sender_id = ${userId1} AND receiver_id = ${userId2})
+         OR (sender_id = ${userId2} AND receiver_id = ${userId1})
+      ORDER BY created_at ASC
+      LIMIT ${limit} OFFSET ${offset}
+    `
+    return result
+  } catch (error) {
+    console.error("Error fetching messages:", error)
+    return []
+  }
+}
+
+export async function getMessageConversations(userId: number) {
+  try {
+    // Get distinct user IDs from sent and received messages
+    const result = await sql`
+      SELECT DISTINCT u.id, u.username, u.full_name, u.profile_picture_url
+      FROM users u
+      WHERE u.id IN (
+        SELECT receiver_id FROM messages WHERE sender_id = ${userId}
+        UNION
+        SELECT sender_id FROM messages WHERE receiver_id = ${userId}
+      ) AND u.id != ${userId}
+    `
+    return result
+  } catch (error) {
+    console.error("Error getting message conversations:", error)
+    return []
+  }
+}
+
+export async function searchFollowedUsers(userId: number, query: string, limit = 10) {
+  try {
+    const result = await sql`
+      SELECT u.id, u.username, u.full_name, u.profile_picture_url, u.bio
+      FROM users u
+      JOIN followers f ON u.id = f.following_id
+      WHERE f.follower_id = ${userId}
+        AND (u.username ILIKE ${"%" + query + "%"} OR u.full_name ILIKE ${"%" + query + "%"})
+      LIMIT ${limit}
+    `
+    return result
+  } catch (error) {
+    console.error("Error searching followed users:", error)
+    return []
+  }
+}

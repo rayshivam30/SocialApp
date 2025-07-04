@@ -250,62 +250,62 @@ export function CreatePostModal({ isOpen, onClose, user, onPostCreated, communit
         </div>
         {/* Action Buttons - sticky at bottom, outside scrollable area */}
         <div className="sticky bottom-0 left-0 right-0 bg-white pt-4 border-t flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-3 sm:space-y-0 z-10 pb-2 px-4 sm:px-6">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-purple-600 hover:bg-purple-50 text-xs sm:text-sm"
-            >
-              <Smile className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-              Emoji
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-green-600 hover:bg-green-50 text-xs sm:text-sm"
-              onClick={() => setVisibility(visibility === "public" ? "private" : "public")}
-            >
-              {visibility === "public" ? (
-                <>
-                  <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Public
-                </>
-              ) : (
-                <>
-                  <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Private
-                </>
-              )}
-            </Button>
-          </div>
-          <div className="flex space-x-2 sm:space-x-3">
-            <Button
-              type="button"
-              onClick={handleClose}
-              disabled={loading}
-              className="flex-1 sm:flex-none"
-            >
-              Cancel
-            </Button>
-            <Button
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-purple-600 hover:bg-purple-50 text-xs sm:text-sm"
+              >
+                <Smile className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Emoji
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-green-600 hover:bg-green-50 text-xs sm:text-sm"
+                onClick={() => setVisibility(visibility === "public" ? "private" : "public")}
+              >
+                {visibility === "public" ? (
+                  <>
+                    <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Public
+                  </>
+                ) : (
+                  <>
+                    <Lock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Private
+                  </>
+                )}
+              </Button>
+            </div>
+            <div className="flex space-x-2 sm:space-x-3">
+              <Button
+                type="button"
+                onClick={handleClose}
+                disabled={loading}
+                className="flex-1 sm:flex-none"
+              >
+                Cancel
+              </Button>
+              <Button
               type="button"
               onClick={handleSubmit}
               disabled={(!content.trim() && !image) || loading || isOverLimit || imageLoading}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 flex-1 sm:flex-none"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Posting...
-                </>
-              ) : (
-                "Post"
-              )}
-            </Button>
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 sm:px-6 flex-1 sm:flex-none"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Posting...
+                  </>
+                ) : (
+                  "Post"
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
         {postError && (
           <div className="text-center text-red-600 text-sm font-medium mt-2 mb-2 px-4">
             {postError}

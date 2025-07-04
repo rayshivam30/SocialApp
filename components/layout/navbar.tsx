@@ -16,7 +16,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Search, Menu, Home, Users, Settings, LogOut } from "lucide-react"
+import { Search, Menu, Home, Users, Settings, LogOut, MessageCircle } from "lucide-react"
 
 interface User {
   id: number
@@ -94,6 +94,14 @@ export function Navbar() {
       >
         <Users className="h-4 w-4" />
         Communities
+      </Link>
+      <Link
+        href="/direct-messages"
+        className={`flex items-center gap-2 ${mobile ? "text-base py-2" : "text-sm"} hover:text-blue-600 transition-colors`}
+        onClick={() => mobile && setIsMobileMenuOpen(false)}
+      >
+        <MessageCircle className="h-4 w-4" />
+        <span className="hidden sm:inline">Messages</span>
       </Link>
     </>
   )

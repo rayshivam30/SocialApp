@@ -89,14 +89,28 @@ export default function CommunityProfilePage() {
             <Users className="h-5 w-5 mr-2 text-blue-500" />
             {community.member_count} members
           </div>
-          <Button
-            variant={isMember ? "secondary" : "default"}
-            onClick={handleJoinLeave}
-            disabled={joinLoading}
-            className="mt-2"
-          >
-            {isMember ? "Joined" : "Join Community"}
-          </Button>
+          <div className="flex gap-2 mt-2">
+            {isMember ? (
+              <>
+                <Button variant="secondary" disabled>Joined</Button>
+                <Button
+                  variant="destructive"
+                  onClick={handleJoinLeave}
+                  disabled={joinLoading}
+                >
+                  Leave Community
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="default"
+                onClick={handleJoinLeave}
+                disabled={joinLoading}
+              >
+                Join Community
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
       {isMember && currentUser && (
