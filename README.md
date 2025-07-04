@@ -11,6 +11,7 @@ A modern, full-stack social media application built with Next.js, TypeScript, an
 - User profiles and settings
 - Search for users, posts, and communities
 - Responsive design for mobile and desktop
+- Real-time messaging powered by Socket.IO
 
 ## Tech Stack
 
@@ -20,6 +21,7 @@ A modern, full-stack social media application built with Next.js, TypeScript, an
 - **Database:** (Add your DB, e.g., PostgreSQL, SQLite)
 - **ORM:** (Add your ORM, e.g., Prisma, Drizzle)
 - **Authentication:** (Add your auth provider, e.g., NextAuth.js, custom)
+- **Real-time Communication:** [Socket.IO](https://socket.io/) (for live messaging and updates)
 
 ## Getting Started
 
@@ -84,11 +86,3 @@ styles/             # Global styles
 ## Contributing
 
 Contributions are welcome! Please open issues and submit pull requests for new features, bug fixes, or improvements.
-
-## License
-
-[MIT](LICENSE)
-
-## Contact
-
-For questions or support, please contact [Your Name](mailto:your.email@example.com). 
