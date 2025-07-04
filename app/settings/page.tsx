@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Navbar } from "@/components/layout/navbar"
 import { Button } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -141,12 +142,7 @@ export default function SettingsPage() {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href={`/profile/${user.username}`}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Profile
-              </Link>
-            </Button>
+            <BackButton />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold">Account Settings</h1>
           <p className="text-gray-600 mt-2 text-sm sm:text-base">Manage your account settings and preferences</p>

@@ -27,7 +27,7 @@ export function generateToken(user: User): string {
       email: user.email,
     },
     JWT_SECRET,
-    { expiresIn: "7d" },
+    { expiresIn: "30d" },
   )
 }
 
@@ -47,7 +47,7 @@ export async function setAuthCookie(user: User) {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 7, // 7 days
+    maxAge: 60 * 60 * 24 * 30, // 30 days
     path: "/",
   })
 }

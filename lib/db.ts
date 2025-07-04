@@ -254,3 +254,29 @@ export async function unfollowUser(followerId: number, followingId: number) {
     return { success: false, error: "Error unfollowing user" }
   }
 }
+
+export async function getCommunityPosts(communityId: number, limit = 20, offset = 0) {
+  try {
+    const result = await sql`
+      SELECT 
+        p.*,
+        u.username,
+        u.full_name,
+        u.profile_picture_url,
+        c.name as community_name,
+        (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
+        (SELECT COUNT(*) FROM comments WHERE post_id = p.id) as comment_count,
+        false as is_liked
+      FROM posts p
+      JOIN users u ON p.user_id = u.id
+      LEFT JOIN communities c ON p.community_id = c.id
+      WHERE p.community_id = ${communityId}
+      ORDER BY p.created_at DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `
+    return result
+  } catch (error) {
+    console.error("Error getting community posts:", error)
+    return []
+  }
+}

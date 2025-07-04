@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getAuthUser } from "@/lib/auth"
-import { createPost, getFeedPosts } from "@/lib/db"
+import { createPost, getFeedPosts, getCommunityPosts } from "@/lib/db"
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,8 +12,14 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const limit = Number.parseInt(searchParams.get("limit") || "20")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
+    const communityId = searchParams.get("communityId")
 
-    const posts = await getFeedPosts(user.id, limit, offset)
+    let posts
+    if (communityId) {
+      posts = await getCommunityPosts(Number(communityId), limit, offset)
+    } else {
+      posts = await getFeedPosts(user.id, limit, offset)
+    }
     return NextResponse.json({ posts })
   } catch (error) {
     console.error("Get posts error:", error)

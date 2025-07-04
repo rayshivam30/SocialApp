@@ -6,6 +6,7 @@ import { Navbar } from "@/components/layout/navbar"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { BackButton } from "@/components/ui/back-button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Users, User } from "lucide-react"
 import Link from "next/link"
@@ -68,6 +69,7 @@ export default function SearchPage() {
       <Navbar user={mockUser} />
 
       <div className="container mx-auto px-4 py-6 max-w-4xl">
+        <BackButton />
         <div className="mb-6">
           <h1 className="text-2xl font-bold">Search Results</h1>
           <p className="text-gray-600">Results for "{query}"</p>

@@ -6,9 +6,15 @@ import Link from "next/link"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Heart, MessageCircle, Share2, MoreHorizontal, Loader2 } from "lucide-react"
+import { Heart, MessageCircle, Share2, MoreHorizontal, Loader2, Trash2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
 import { CommentSection } from "./comment-section"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from "@/components/ui/dropdown-menu"
 
 interface PostCardProps {
   post: {
@@ -24,6 +30,7 @@ interface PostCardProps {
     comment_count: number
     is_liked: boolean
     hashtags?: string[]
+    user_id: number
   }
   currentUser?: {
     id: number
@@ -40,6 +47,8 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
   const [commentCount, setCommentCount] = useState(post.comment_count)
   const [showComments, setShowComments] = useState(false)
   const [likingInProgress, setLikingInProgress] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [deleted, setDeleted] = useState(false)
 
   const handleCommentAdded = () => {
     setCommentCount((prev) => prev + 1)
@@ -50,12 +59,12 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
 
     setLikingInProgress(true)
 
-    // Optimistic update
+    // Optimistic update (fix: only increment/decrement by 1, never set to 21)
     const wasLiked = liked
     const previousCount = likeCount
-
-    setLiked(!wasLiked)
-    setLikeCount(wasLiked ? previousCount - 1 : previousCount + 1)
+    const newLiked = !wasLiked
+    setLiked(newLiked)
+    setLikeCount(previousCount + (newLiked ? 1 : -1))
 
     try {
       const response = await fetch(`/api/posts/${post.id}/like`, {
@@ -90,6 +99,24 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
     setShowComments(!showComments)
   }
 
+  const handleDelete = async () => {
+    if (!currentUser || currentUser.id !== post.user_id) return
+    if (!window.confirm("Are you sure you want to delete this post?")) return
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" })
+      if (res.ok) {
+        setDeleted(true)
+      } else {
+        alert("Failed to delete post.")
+      }
+    } catch (e) {
+      alert("Error deleting post.")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const renderContent = (content: string) => {
     return content.split(" ").map((word, index) => {
       if (word.startsWith("#")) {
@@ -102,6 +129,8 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
       return word + " "
     })
   }
+
+  if (deleted) return null
 
   return (
     <Card className="w-full hover:shadow-lg transition-shadow duration-200">
@@ -140,9 +169,20 @@ export function PostCard({ post, currentUser, onLike }: PostCardProps) {
             </div>
           </div>
         </div>
-        <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-auto sm:w-auto">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 sm:h-auto sm:w-auto">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            {currentUser && currentUser.id === post.user_id && (
+              <DropdownMenuItem onClick={handleDelete} disabled={deleting} className="text-red-600 flex items-center">
+                <Trash2 className="h-4 w-4 mr-2" /> Delete Post
+              </DropdownMenuItem>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </CardHeader>
 
       <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-4 pt-0">
