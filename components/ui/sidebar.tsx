@@ -253,6 +253,26 @@ const Sidebar = React.forwardRef<
             {children}
           </div>
         </div>
+        {isMobile === true && (
+          <>
+            <a
+              href="/direct-messages"
+              className="fixed bottom-6 right-6 z-50 sm:hidden bg-blue-600 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+              aria-label="Messages"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+            </a>
+            <a
+              href="/feed#create-post"
+              className="fixed bottom-6 left-6 z-50 sm:hidden bg-green-600 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-green-400"
+              style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}
+              aria-label="Create Post"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            </a>
+          </>
+        )}
       </div>
     )
   }

@@ -50,52 +50,6 @@ export function FloatingActionButton({ onCreatePost, className }: FloatingAction
             </Button>
           </div>
         </div>
-
-        {/* Photo Post Button */}
-        <div
-          className={`transform transition-all duration-300 delay-75 ${
-            isExpanded ? "translate-y-0 opacity-100 scale-100" : "translate-y-8 opacity-0 scale-75"
-          }`}
-        >
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="bg-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg shadow-lg border">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">Add Photo</span>
-            </div>
-            <Button
-              onClick={() => {
-                // Handle photo post
-                setIsExpanded(false)
-              }}
-              size="lg"
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-            >
-              <Camera className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            </Button>
-          </div>
-        </div>
-
-        {/* Community Post Button */}
-        <div
-          className={`transform transition-all duration-300 delay-150 ${
-            isExpanded ? "translate-y-0 opacity-100 scale-100" : "translate-y-8 opacity-0 scale-75"
-          }`}
-        >
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="bg-white px-2 py-1 sm:px-3 sm:py-2 rounded-lg shadow-lg border">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">Community</span>
-            </div>
-            <Button
-              onClick={() => {
-                // Handle community post
-                setIsExpanded(false)
-              }}
-              size="lg"
-              className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110"
-            >
-              <Users className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-            </Button>
-          </div>
-        </div>
       </div>
 
       {/* Main FAB */}

@@ -43,6 +43,7 @@ interface Post {
   comment_count: number
   is_liked: boolean
   hashtags?: string[]
+  user_id: number
 }
 
 interface Community {
@@ -282,7 +283,7 @@ export default function ProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar user={currentUser || { username: "loading", full_name: "Loading..." }} />
+        <Navbar />
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
           <ProfileSkeleton />
         </div>
@@ -293,7 +294,7 @@ export default function ProfilePage() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar user={currentUser || { username: "error", full_name: "Error" }} />
+        <Navbar />
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
@@ -306,7 +307,7 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Navbar user={currentUser || { username: "notfound", full_name: "Not Found" }} />
+        <Navbar />
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
           <Alert>
             <AlertDescription>User not found</AlertDescription>
@@ -318,95 +319,94 @@ export default function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar user={currentUser || { username: "user", full_name: "User" }} />
+      <Navbar />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
         <BackButton />
-        <Card className="mb-4 sm:mb-6">
-          <CardHeader className="p-4 sm:p-6">
-            <div className="flex flex-col space-y-4">
-              {/* Profile Header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <Avatar className="h-20 w-20 sm:h-24 sm:w-24 mx-auto sm:mx-0">
-                  <AvatarImage src={profile.profile_picture_url || "/placeholder.svg"} />
-                  <AvatarFallback className="text-xl sm:text-2xl">
-                    {profile.full_name?.charAt(0) || profile.username.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="flex-1 text-center sm:text-left">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4">
-                    <div>
-                      <h1 className="text-xl sm:text-2xl font-bold">{profile.full_name || profile.username}</h1>
-                      <p className="text-gray-600 text-sm sm:text-base">@{profile.username}</p>
-                    </div>
-
-                    <div className="flex justify-center sm:justify-start space-x-2 mt-3 sm:mt-0">
-                      {profile.is_own_profile ? (
-                        <Button variant="outline" asChild className="w-full sm:w-auto">
-                          <Link href="/settings">
-                            <Settings className="h-4 w-4 mr-2" />
-                            Edit Profile
-                          </Link>
-                        </Button>
-                      ) : (
-                        <>
-                          <Button
-                            onClick={handleFollow}
-                            disabled={followLoading}
-                            variant={profile.is_following ? "outline" : "default"}
-                            className="w-full sm:w-auto"
-                          >
-                            {followLoading ? (
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            ) : profile.is_following ? (
-                              <UserMinus className="h-4 w-4 mr-2" />
-                            ) : (
-                              <UserPlus className="h-4 w-4 mr-2" />
-                            )}
-                            {profile.is_following ? "Unfollow" : "Follow"}
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            className="w-full sm:w-auto"
-                            onClick={() => router.push(`/direct-messages?user=${profile.username}`)}
-                          >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Message
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {profile.bio && <p className="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">{profile.bio}</p>}
-
-                  <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
-                    <div className="flex items-center justify-center sm:justify-start">
-                      <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                      Joined {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
-                    </div>
-                  </div>
-
-                  <div className="flex justify-center sm:justify-start space-x-4 sm:space-x-6 text-sm">
-                    <div className="text-center sm:text-left">
-                      <span className="font-semibold">{profile.post_count}</span>
-                      <span className="text-gray-600 ml-1">Posts</span>
-                    </div>
-                    <div className="text-center sm:text-left">
-                      <span className="font-semibold">{profile.follower_count}</span>
-                      <span className="text-gray-600 ml-1">Followers</span>
-                    </div>
-                    <div className="text-center sm:text-left">
-                      <span className="font-semibold">{profile.following_count}</span>
-                      <span className="text-gray-600 ml-1">Following</span>
-                    </div>
+        <Card className="mb-4 sm:mb-6 bg-white/90 border border-gray-200 rounded-2xl shadow-xl">
+          <CardHeader className="p-6 sm:p-8 flex flex-col items-center">
+            <div className="flex flex-col items-center w-full">
+              <Avatar className="h-24 w-24 mb-4 shadow-md border-4 border-white bg-gray-100">
+                <AvatarImage src={profile.profile_picture_url || "/placeholder.svg"} />
+                <AvatarFallback className="text-2xl">
+                  {profile.full_name?.charAt(0) || profile.username.charAt(0)}
+                </AvatarFallback>
+              </Avatar>
+              <h1 className="text-2xl font-extrabold text-gray-900 mb-1">{profile.full_name || profile.username}</h1>
+              <p className="text-gray-500 text-base mb-2">@{profile.username}</p>
+              {profile.bio && <p className="text-gray-700 mb-3 text-center text-sm max-w-xs">{profile.bio}</p>}
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2 mt-2 mb-4">
+                <div className="flex flex-col items-center sm:items-start">
+                  <div className="flex items-center text-gray-500 text-xs mb-1">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    Joined {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
                   </div>
                 </div>
+                <div className="flex flex-row justify-center gap-6 text-center mt-2 sm:mt-0">
+                  <div>
+                    <span className="font-bold text-lg text-gray-900">{profile.post_count}</span>
+                    <span className="text-gray-500 ml-1">Posts</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-lg text-gray-900">{profile.follower_count}</span>
+                    <span className="text-gray-500 ml-1">Followers</span>
+                  </div>
+                  <div>
+                    <span className="font-bold text-lg text-gray-900">{profile.following_count}</span>
+                    <span className="text-gray-500 ml-1">Following</span>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full flex flex-col sm:flex-row sm:justify-center gap-2 mt-2">
+                {profile.is_own_profile ? (
+                  <Button variant="outline" asChild className="w-full sm:w-auto px-6 py-2 rounded-lg border-gray-300 shadow-sm font-semibold">
+                    <Link href="/settings">
+                      <Settings className="h-5 w-5 mr-2" />
+                      Edit Profile
+                    </Link>
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      onClick={handleFollow}
+                      disabled={followLoading}
+                      variant={profile.is_following ? "outline" : "default"}
+                      className="w-full sm:w-auto px-6 py-2 rounded-lg border-gray-300 shadow-sm font-semibold"
+                    >
+                      {followLoading ? (
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      ) : profile.is_following ? (
+                        <UserMinus className="h-5 w-5 mr-2" />
+                      ) : (
+                        <UserPlus className="h-5 w-5 mr-2" />
+                      )}
+                      {profile.is_following ? "Unfollow" : "Follow"}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      className="w-full sm:w-auto px-6 py-2 rounded-lg border-gray-300 shadow-sm font-semibold"
+                      onClick={() => router.push(`/direct-messages?user=${profile.username}`)}
+                    >
+                      <MessageCircle className="h-5 w-5 mr-2" />
+                      Message
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </CardHeader>
         </Card>
+
+        {/* Floating Message Button for Mobile */}
+        {!profile.is_own_profile && (
+          <button
+            className="fixed bottom-20 right-4 z-50 sm:hidden bg-blue-600 text-white rounded-full shadow-lg p-4 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onClick={() => router.push(`/direct-messages?user=${profile.username}`)}
+            aria-label="Message"
+          >
+            <MessageCircle className="h-6 w-6" />
+          </button>
+        )}
 
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
@@ -424,7 +424,7 @@ export default function ProfilePage() {
           <TabsContent value="posts" className="space-y-3 sm:space-y-4">
             {posts.length > 0 ? (
               posts.map((post) => (
-                <PostCard key={post.id} post={post} currentUser={currentUser} onLike={handlePostLike} />
+                <PostCard key={post.id} post={{...post, user_id: post.user_id ?? 0}} onLike={handlePostLike} />
               ))
             ) : (
               <div className="text-center py-8 sm:py-12">

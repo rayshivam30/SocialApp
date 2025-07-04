@@ -241,7 +241,30 @@ export function Navbar() {
 
                         {/* Navigation Links */}
                         <div className="flex flex-col gap-1 py-4 border-b">
-                          <NavLinks mobile />
+                          <Link
+                            href="/feed"
+                            className="flex items-center gap-2 text-base py-2 hover:text-blue-600 transition-colors"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <Home className="h-4 w-4" />
+                            Feed
+                          </Link>
+                          <Link
+                            href="/communities"
+                            className="flex items-center gap-2 text-base py-2 hover:text-blue-600 transition-colors"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <Users className="h-4 w-4" />
+                            Communities
+                          </Link>
+                          <Link
+                            href="/direct-messages"
+                            className="flex items-center gap-2 text-base py-2 hover:text-blue-600 transition-colors"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <MessageCircle className="h-5 w-5 mr-2" />
+                            Messages
+                          </Link>
                         </div>
 
                         {/* User Actions */}

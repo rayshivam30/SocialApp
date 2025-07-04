@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { MessageCircle, Plus } from "lucide-react"
+import { MessageCircle, Plus, ArrowLeft } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { io } from "socket.io-client"
 
@@ -16,6 +16,7 @@ function ChatArea({ currentUser, otherUser, onBack, messages, setMessages }: any
   const [loading, setLoading] = useState(false)
   const [input, setInput] = useState("")
   const [sending, setSending] = useState(false)
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 640;
 
   // Connect to socket and join room
   useEffect(() => {
@@ -92,20 +93,10 @@ function ChatArea({ currentUser, otherUser, onBack, messages, setMessages }: any
   )
 
   return (
-    <div className="flex flex-col h-full flex-1">
-      <div className="flex items-center border-b px-4 py-3">
-        <Button variant="ghost" size="icon" className="mr-2 sm:hidden" onClick={onBack}>
-          &larr;
-        </Button>
-        <Avatar className="h-8 w-8 mr-2">
-          <AvatarImage src={otherUser.profile_picture_url || "/placeholder.svg"} />
-          <AvatarFallback>{otherUser.full_name?.charAt(0) || otherUser.username.charAt(0)}</AvatarFallback>
-        </Avatar>
-        <div className="font-semibold">{otherUser.full_name || otherUser.username}</div>
-      </div>
-      <div className="flex-1 overflow-y-auto px-4 py-2 bg-gray-50">
+    <div className={`flex flex-col h-full flex-1 ${isMobile ? 'pt-0' : ''}`}>
+      <div className="flex-1 overflow-y-auto px-4 py-2 bg-gray-50" style={isMobile ? {paddingTop: 0, paddingBottom: 80} : {}}>
         {loading ? <div>Loading...</div> : messages.length === 0 ? <div className="text-gray-400 text-center mt-10">No messages yet.</div> : (
-          messages.map((msg, i) => (
+          messages.map((msg: any, i: number) => (
             <div key={i} className={`mb-2 flex ${msg.from === currentUser.id ? 'justify-end' : 'justify-start'}`}>
               <div className={`px-3 py-2 rounded-2xl max-w-xs break-words ${msg.from === currentUser.id ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-900'}`}>
                 {msg.content}
@@ -114,7 +105,7 @@ function ChatArea({ currentUser, otherUser, onBack, messages, setMessages }: any
           ))
         )}
       </div>
-      <div className="border-t px-4 py-3 flex gap-2">
+      <div className="border-t px-4 py-3 flex gap-2 bg-white" style={isMobile ? {position: 'fixed', bottom: 0, left: 0, width: '100vw', zIndex: 50} : {}}>
         <Input
           className="flex-1"
           value={input}
@@ -225,18 +216,143 @@ export default function DirectMessagesPage() {
   // Responsive: hide sidebar on mobile when chat is open
   const isMobile = typeof window !== "undefined" && window.innerWidth < 640
 
-  return (
-    <div className="flex h-[90vh] w-full max-w-5xl mx-auto bg-white rounded-lg shadow overflow-hidden mt-8 border">
-      <div className="absolute left-4 top-4 z-10">
-        <Button variant="outline" size="icon" onClick={() => router.back()}>
-          &larr;
-        </Button>
+  // Top bar with back button (always visible, shows avatar and name side by side when chat selected)
+  const TopBar = (
+    <div className="flex items-center gap-2 px-4 py-3 border-b shadow-sm bg-white sticky top-0 z-40 min-h-[56px]">
+      <Button variant="ghost" size="icon" onClick={() => {
+        if (selectedUser || pendingUser) setSelectedUser(null)
+        else router.back()
+      }} aria-label="Back">
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
+      <span className="font-bold text-lg flex items-center gap-2"><MessageCircle className="h-5 w-5" /> Direct</span>
+    </div>
+  )
+
+  // Chat area header (avatar and name at the very top, full width, left-aligned)
+  const ChatAreaHeader = (selectedUser || pendingUser) ? (
+    <div className="flex items-center gap-3 px-4 py-3 border-b bg-white w-full">
+      <Avatar className="h-9 w-9">
+        <AvatarImage src={(pendingUser || selectedUser)?.profile_picture_url || "/placeholder.svg"} />
+        <AvatarFallback>{(pendingUser || selectedUser)?.full_name?.charAt(0) || (pendingUser || selectedUser)?.username.charAt(0)}</AvatarFallback>
+      </Avatar>
+      <div className="font-semibold text-base">{(pendingUser || selectedUser)?.full_name || (pendingUser || selectedUser)?.username}</div>
+    </div>
+  ) : null
+
+  // Mobile Instagram-like UI
+  if (isMobile) {
+    // Inbox view (no chat selected)
+    if (!(selectedUser || pendingUser)) {
+      return (
+        <div className="fixed inset-0 z-50 flex flex-col bg-white h-[100dvh] w-full">
+          {TopBar}
+          {/* Conversation list */}
+          <div className="flex-1 overflow-y-auto">
+            {pendingUser && !conversations.some((u: any) => u.id === pendingUser.id) && (
+              <div className={`flex items-center gap-3 cursor-pointer hover:bg-gray-200 px-4 py-3 ${selectedUser?.id === pendingUser.id ? 'bg-gray-200' : ''}`}
+                onClick={() => { setMessages([]); setSelectedUser({
+                  id: pendingUser.id,
+                  username: pendingUser.username,
+                  full_name: pendingUser.full_name,
+                  profile_picture_url: pendingUser.profile_picture_url
+                }); setSidebarOpen(false); }}>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={pendingUser.profile_picture_url || "/placeholder.svg"} />
+                  <AvatarFallback>{pendingUser.full_name?.charAt(0) || pendingUser.username.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="font-semibold">{pendingUser.full_name || pendingUser.username}</div>
+                  <div className="text-xs text-gray-500">@{pendingUser.username} <span className="text-blue-500">New chat</span></div>
+                </div>
+              </div>
+            )}
+            {conversations.length === 0 && !pendingUser ? (
+              <div className="text-gray-400 text-center mt-10">No conversations yet.</div>
+            ) : (
+              conversations.map((user: any) => (
+                <div key={user.id} className={`flex items-center gap-3 cursor-pointer hover:bg-gray-100 px-4 py-3 ${selectedUser?.id === user.id ? 'bg-gray-200' : ''}`} onClick={() => { setMessages([]); setSelectedUser(user); setSidebarOpen(false) }}>
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.profile_picture_url || "/placeholder.svg"} />
+                    <AvatarFallback>{user.full_name?.charAt(0) || user.username.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div className="font-semibold">{user.full_name || user.username}</div>
+                    <div className="text-xs text-gray-500">@{user.username}</div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          {/* New Message Modal */}
+          {showNew && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+              <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-4 relative">
+                <button onClick={() => setShowNew(false)} className="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+                <h2 className="text-xl font-bold mb-2">New Message</h2>
+                <Input
+                  className="mb-3"
+                  placeholder="Search users..."
+                  value={search}
+                  onChange={e => handleSearch(e.target.value)}
+                  autoFocus
+                />
+                <div className="max-h-60 overflow-y-auto">
+                  {searchResults.length === 0 && search.trim() ? (
+                    <div className="text-gray-400">No users found.</div>
+                  ) : (
+                    searchResults.map((user: any) => (
+                      <div key={user.id} className="flex items-center gap-3 cursor-pointer hover:bg-gray-100 p-2 rounded" onClick={() => {
+                        if (!conversations.some((c: any) => c.id === user.id)) {
+                          setConversations((prev: any[]) => [user, ...prev])
+                        }
+                        setMessages([]);
+                        setSelectedUser(user);
+                        setPendingUser(null);
+                        setShowNew(false);
+                        setSearch("");
+                        setSearchResults([]);
+                      }}>
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.profile_picture_url || "/placeholder.svg"} />
+                          <AvatarFallback>{user.full_name?.charAt(0) || user.username.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-semibold">{user.full_name || user.username}</div>
+                          <div className="text-xs text-gray-500">@{user.username}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )
+    }
+    // Chat view (chat selected)
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col bg-white h-[100dvh] w-full">
+        {ChatAreaHeader}
+        <div className="flex-1 flex flex-col h-full pt-0" style={{paddingBottom: 80}}>
+          <ChatArea currentUser={currentUser} otherUser={pendingUser || selectedUser} onBack={() => setSelectedUser(null)} messages={messages} setMessages={setMessages} />
+        </div>
       </div>
+    )
+  }
+
+  return (
+    <div className={`flex h-[90vh] w-full max-w-5xl mx-auto bg-white rounded-lg shadow overflow-hidden mt-8 border relative ${isMobile ? 'flex-col' : ''}`}>
+      {/* Top bar for desktop, only in inbox */}
+      {!(selectedUser || pendingUser) && <div className="absolute left-0 top-0 w-full z-40">{TopBar}</div>}
       {/* Sidebar */}
-      <div className={`flex flex-col w-72 border-r bg-gray-50 ${isMobile && (selectedUser || pendingUser) ? 'hidden' : ''}`}>
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <div className="font-bold text-lg flex items-center gap-2"><MessageCircle className="h-5 w-5" /> Direct</div>
-          <Button size="icon" variant="ghost" onClick={() => setShowNew(true)}><Plus /></Button>
+      <div className={`flex flex-col w-72 border-r bg-gray-50 ${isMobile && (selectedUser || pendingUser) ? 'hidden' : ''} ${isMobile ? 'pt-2' : ''}`} style={isMobile ? {height: '100vh', position: 'fixed', zIndex: 20, left: 0, top: 0, width: '100vw'} : {}}>
+        <div className="flex items-center gap-2 px-4 py-3 border-b bg-white">
+          <Button variant="ghost" size="icon" onClick={() => router.back()} aria-label="Back">
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <span className="font-bold text-lg flex items-center gap-2"><MessageCircle className="h-5 w-5" /> Direct</span>
         </div>
         <div className="flex-1 overflow-y-auto">
           {/* Show pendingUser at the top if not in conversations */}
@@ -277,7 +393,8 @@ export default function DirectMessagesPage() {
         </div>
       </div>
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col h-full">
+      <div className={`flex-1 flex flex-col h-full ${isMobile && (selectedUser || pendingUser) ? 'pt-14' : ''}`} style={isMobile && (selectedUser || pendingUser) ? {height: '100vh', width: '100vw', position: 'fixed', left: 0, top: 0, zIndex: 10, background: 'white'} : {}}>
+        {(selectedUser || pendingUser) && ChatAreaHeader}
         <ChatArea currentUser={currentUser} otherUser={pendingUser || selectedUser} onBack={() => setSelectedUser(null)} messages={messages} setMessages={setMessages} />
       </div>
       {/* New Message Modal */}
