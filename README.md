@@ -86,11 +86,3 @@ styles/             # Global styles
 ## Contributing
 
 Contributions are welcome! Please open issues and submit pull requests for new features, bug fixes, or improvements.
-
-## License
-
-[MIT](LICENSE)
-
-## Contact
-
-For questions or support, please contact [Your Name](mailto:your.email@example.com). 
