@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { MessageCircle, Plus, ArrowLeft } from "lucide-react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { io } from "socket.io-client"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const SOCKET_URL = "http://localhost:4000"
 let socket: any = null
@@ -135,6 +136,7 @@ export default function DirectMessagesPage() {
   const [pendingUser, setPendingUser] = useState<any>(null)
   const [messages, setMessages] = useState<any[]>([])
   const router = useRouter()
+  const isMobile = useIsMobile()
 
   useEffect(() => {
     fetchCurrentUser()
@@ -169,10 +171,6 @@ export default function DirectMessagesPage() {
             }
           })
       }
-    } else if (conversations.length > 0) {
-      setSelectedUser(conversations[0])
-      setPendingUser(null)
-      console.log('Default to first conversation:', conversations[0])
     } else {
       setSelectedUser(null)
       setPendingUser(null)
@@ -213,9 +211,6 @@ export default function DirectMessagesPage() {
     }
   }
 
-  // Responsive: hide sidebar on mobile when chat is open
-  const isMobile = typeof window !== "undefined" && window.innerWidth < 640
-
   // Top bar with back button (always visible, shows avatar and name side by side when chat selected)
   const TopBar = (
     <div className="flex items-center gap-2 px-4 py-3 border-b shadow-sm bg-white sticky top-0 z-40 min-h-[56px]">
@@ -232,6 +227,11 @@ export default function DirectMessagesPage() {
   // Chat area header (avatar and name at the very top, full width, left-aligned)
   const ChatAreaHeader = (selectedUser || pendingUser) ? (
     <div className="flex items-center gap-3 px-4 py-3 border-b bg-white w-full">
+      {isMobile && (
+        <Button variant="ghost" size="icon" onClick={() => setSelectedUser(null)} aria-label="Back">
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      )}
       <Avatar className="h-9 w-9">
         <AvatarImage src={(pendingUser || selectedUser)?.profile_picture_url || "/placeholder.svg"} />
         <AvatarFallback>{(pendingUser || selectedUser)?.full_name?.charAt(0) || (pendingUser || selectedUser)?.username.charAt(0)}</AvatarFallback>
